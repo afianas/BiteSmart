@@ -19,6 +19,3 @@ venv/
 *.pb
 *.pbtxt
 
-# Models (tracked ONLY via LFS)
-models/*.keras
-models/*.h5
