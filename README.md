@@ -25,7 +25,7 @@ Evaluation was performed on the validation split of the Food-41 / Food-101 datas
 
 
 📦 **Model download:**  
-
+https://drive.google.com/file/d/1Nz9kdW7M2VcIPts6RZf3gSTpqpbmUaEZ/view?usp=sharing 
 
 ## 🛠 Tech Stack
 - TensorFlow / Keras
