@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BiteSmart | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🍽 Upload Your Meal</h1>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="analyze()">Analyze Food</button>
+
+    <img id="preview">
+    <div class="result" id="result"></div>
+
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+}
+
+async function analyze() {
+    const file = document.getElementById("imageInput").files[0];
+    if (!file) return alert("Upload an image!");
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    document.getElementById("preview").src = URL.createObjectURL(file);
+
+    const res = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("result").innerText =
+        `Food: ${data.food} | Calories: ${data.calories} kcal`;
+}
+</script>
+
+</body>
+</html>

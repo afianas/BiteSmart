@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BiteSmart | Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🍏 BiteSmart</h1>
+    <h3>Create Account</h3>
+
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+    <p><a href="login.html">Already have an account? Login</a></p>
+</div>
+
+<script>
+async function register() {
+    const email = email.value;
+    const password = password.value;
+
+    const res = await fetch("http://127.0.0.1:8000/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email, password})
+    });
+
+    if (res.ok) {
+        alert("Registered successfully!");
+        window.location.href = "login.html";
+    } else {
+        alert("User already exists");
+    }
+}
+</script>
+
+</body>
+</html>
