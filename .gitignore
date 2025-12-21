@@ -2,12 +2,23 @@
 __pycache__/
 *.pyc
 
-# Virtual environment
+# Virtual env
 venv/
+.env
 
-# Models
+# Databases
+*.db
+
+# Logs
+*.log
+
+# Notebooks
+.ipynb_checkpoints/
+
+# TensorFlow cache
+*.pb
+*.pbtxt
+
+# Models (tracked ONLY via LFS)
 models/*.keras
 models/*.h5
-
-# OS
-.DS_Store
