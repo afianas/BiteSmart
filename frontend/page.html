@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteSmart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #d4f4d2; /* light green */
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #2e7d32;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        video, img {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+        input[type="file"] {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🍏 Smart Food Coach</h1>
+    <div class="container">
+        <h2>Capture or Upload Your Meal</h2>
+        
+        <!-- Camera Capture -->
+        <video id="camera" autoplay></video>
+        <br>
+        <button onclick="capturePhoto()">📸 Capture Photo</button>
+        <br>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="photo" alt="Captured Photo">
+        
+        <hr>
+
+        <!-- Upload Option -->
+        <input type="file" accept="image/*" onchange="previewImage(event)">
+        <img id="uploadedImage" alt="Uploaded Preview">
+
+        <hr>
+        
+        <!-- Buttons -->
+        <button onclick="logMeal()">Log Meal</button>
+        <button onclick="viewReport()">View Weekly Report</button>
+        <button onclick="suggestAlternative()">Suggest Lighter Alternative</button>
+    </div>
+
+    <script>
+        // Open camera
+        const camera = document.getElementById('camera');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                camera.srcObject = stream;
+            })
+            .catch(err => {
+                alert("Camera access denied!");
+            });
+
+        // Capture from camera
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const photo = document.getElementById('photo');
+            const context = canvas.getContext('2d');
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+            photo.src = canvas.toDataURL('image/png');
+        }
+
+        // Preview uploaded image
+        function previewImage(event) {
+            const uploadedImage = document.getElementById('uploadedImage');
+            uploadedImage.src = URL.createObjectURL(event.target.files[0]);
+        }
+
+        // Button actions
+        function logMeal() {
+            alert("Meal logged! (Connect to backend here)");
+        }
+
+        function viewReport() {
+            alert("Weekly report displayed here.");
+        }
+
+        function suggestAlternative() {
+            alert("Lighter alternative suggested here.");
+        }
+    </script>
+
+</body>
+</html>
