@@ -19,3 +19,6 @@ venv/
 *.pb
 *.pbtxt
 
+models/*.keras
+models/*.h5
+models/*.pkl
