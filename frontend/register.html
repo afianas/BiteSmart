@@ -10,29 +10,38 @@
     <h1>🍏 BiteSmart</h1>
     <h3>Create Account</h3>
 
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Password" required>
 
     <button onclick="register()">Register</button>
-    <p><a href="login.html">Already have an account? Login</a></p>
+    <p><a href="login.html">Already have an account?</a></p>
 </div>
 
 <script>
 async function register() {
-    const email = email.value;
-    const password = password.value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    const res = await fetch("http://127.0.0.1:8000/register", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({email, password})
-    });
+    try {
+        const res = await fetch("http://127.0.0.1:8000/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
 
-    if (res.ok) {
+        if (!res.ok) {
+            alert("User already exists or error");
+            return;
+        }
+
         alert("Registered successfully!");
         window.location.href = "login.html";
-    } else {
-        alert("User already exists");
+
+    } catch (err) {
+        console.error(err);
+        alert("Registration failed");
     }
 }
 </script>

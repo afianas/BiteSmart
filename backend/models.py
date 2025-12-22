@@ -1,5 +1,19 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
 from .database import Base
+
+class PredictionHistory(Base):
+    __tablename__ = "prediction_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))  # ✅ NOT user object
+    food = Column(String)
+    calories = Column(Integer)
+    confidence = Column(Integer)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
 
 
 class User(Base):
@@ -21,3 +35,5 @@ class FoodCalories(Base):
     id = Column(Integer, primary_key=True)
     food_name = Column(String, unique=True, index=True)
     calories = Column(Integer)
+
+
