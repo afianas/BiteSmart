@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>BiteSmart | Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,98 +10,86 @@
     <h1>🍽 Upload Your Meal</h1>
 
     <input type="file" id="imageInput" accept="image/*">
-
-    <!-- IMPORTANT: type="button" -->
     <button id="analyzeBtn" type="button">Analyze</button>
 
-    <img id="preview" style="max-width:300px; display:none; margin-top:15px;">
-
-    <p id="foodText">Food:</p>
-    <p id="calorieText">Calories:</p>
+    <img id="preview" />
+    <div class="result" id="result"></div>
 
     <button type="button" onclick="logout()">Logout</button>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ Dashboard JS loaded");
-
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const imageInput = document.getElementById("imageInput");
-    const preview = document.getElementById("preview");
-    const foodText = document.getElementById("foodText");
-    const calorieText = document.getElementById("calorieText");
-
-    if (!analyzeBtn) {
-        console.error("❌ analyzeBtn not found");
-        return;
-    }
-
-    analyzeBtn.addEventListener("click", async () => {
-        console.log("👉 Analyze button clicked");
-
-        const token = localStorage.getItem("token");
-        console.log("🔑 Token:", token);
-
-        if (!token) {
-            alert("Not logged in");
-            return;
-        }
-
-        if (!imageInput.files.length) {
-            alert("Please select an image");
-            return;
-        }
-
-        const file = imageInput.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // Preview image
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-
-        try {
-            const res = await fetch("http://127.0.0.1:8000/predict", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            console.log("📡 Response status:", res.status);
-
-            if (!res.ok) {
-                const err = await res.text();
-                console.error("❌ Backend error:", err);
-                alert("Backend error");
-                return;
-            }
-
-            const data = await res.json();
-            console.log("✅ Prediction result:", data);
-
-            if (data.status === "uncertain") {
-                foodText.innerText = "Food: Uncertain";
-                calorieText.innerText = "Calories: —";
-                return;
-            }
-
-            foodText.innerText = `Food: ${data.food}`;
-            calorieText.innerText = `Calories: ${data.calories} kcal`;
-
-        } catch (err) {
-            console.error("❌ Network error:", err);
-            alert("Server not reachable");
-        }
-    });
-});
-
 function logout() {
     localStorage.removeItem("token");
     window.location.href = "login.html";
 }
+
+const analyzeBtn = document.getElementById("analyzeBtn");
+const imageInput = document.getElementById("imageInput");
+const resultDiv = document.getElementById("result");
+const previewImg = document.getElementById("preview");
+
+analyzeBtn.addEventListener("click", async () => {
+    if (!imageInput.files.length) {
+        alert("Please select an image");
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("You are not logged in");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const file = imageInput.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    previewImg.src = URL.createObjectURL(file);
+    resultDiv.innerText = "⏳ Analyzing...";
+
+    try {
+        const res = await fetch("http://127.0.0.1:8000/predict", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error("Prediction failed");
+        }
+
+         const data = await res.json();
+
+if (data.status === "uncertain") {
+    resultDiv.innerHTML = `
+        <p>⚠️ ${data.message}</p>
+        <p><strong>Top predictions:</strong></p>
+        <ul>
+            ${data.top_5.map(item =>
+                `<li>${item.label} (${(item.confidence * 100).toFixed(1)}%)</li>`
+            ).join("")}
+        </ul>
+    `;
+    return;
+}
+
+// ✅ confident prediction
+resultDiv.innerHTML = `
+    <p><strong>Food:</strong> ${data.food}</p>
+    <p><strong>Calories:</strong> ${data.calories} kcal</p>
+    <p><strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%</p>
+`;
+
+    
+    } catch (err) {
+        console.error(err);
+        resultDiv.innerText = "❌ Backend error";
+    }
+});
 </script>
 
 </body>
