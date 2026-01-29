@@ -36,3 +36,5 @@ https://drive.google.com/file/d/1Nz9kdW7M2VcIPts6RZf3gSTpqpbmUaEZ/view?usp=shari
 
 ## ⚠️ Disclaimer
 Calorie estimates are approximate and based on standard nutritional references.
+
+🚧 This project is currently a work in progress.
