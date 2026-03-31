@@ -22,6 +22,7 @@ app.add_middleware(
         "http://localhost:5501",
         "http://127.0.0.1:5500",
         "http://localhost:5500",
+        "http://localhost:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -71,8 +72,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 @app.post("/predict")
 async def predict(
     file: UploadFile = File(...),
-    user=Depends(get_current_user),
-    db=Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     image_bytes = await file.read()
     result = predict_food(image_bytes)
@@ -82,15 +82,14 @@ async def predict(
 
     calories = get_calories(result["food"], db)
 
-    history = PredictionHistory(
-    user_id=user.id,   # ✅ FIX
-    food=result["food"],
-    calories=calories,
-    confidence=int(result["confidence"] * 100)
-)
-
-    db.add(history)
-    db.commit()
+    # history = PredictionHistory(
+    #     user_id=user.id,
+    #     food=result["food"],
+    #     calories=calories,
+    #     confidence=int(result["confidence"] * 100)
+    # )
+    # db.add(history)
+    # db.commit()
     
     
 
