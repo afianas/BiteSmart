@@ -6,7 +6,40 @@
 
 The system is designed with real-world applicability in mind, demonstrating a robust architecture spanning from client-side image processing and intuitive UI to high-performance model inference on the backend. It serves as a comprehensive example of deploying computer vision models into production-level web applications.
 
+## 🎥 Demo
+
+Watch the full working demo of BiteSmart:
+
+[▶️ View Demo Video](https://drive.google.com/file/d/1Bbz210GSikyvoQ6q5-QIpIcbpfrPFYsh/view?usp=sharing)
+
 ---
+
+## 📸 Screenshots
+
+### 1. Upload Interface
+Users can upload a food image using a drag-and-drop or click-based interface.
+
+<img width="800" src="https://github.com/user-attachments/assets/0eff7561-3dd9-48e5-a6a7-559dfe547e35" />
+<br/>
+
+<img width="800" src="https://github.com/user-attachments/assets/39fe6ef2-b162-415f-b088-27d7be655a2b" />
+
+---
+
+### 2. Image Preview & Interaction
+Once uploaded, the image is displayed with options to analyze or replace.
+
+<img width="800" src="https://github.com/user-attachments/assets/4fa2ddb8-b328-4dc5-aae2-07539ab15254" />
+<br/>
+
+<img width="800" src="https://github.com/user-attachments/assets/93c45fe9-454b-4e76-85d3-10e2707f7427" />
+
+---
+
+### 3. Prediction Results
+The model predicts the food item, displays confidence, calorie estimation, and top alternatives.
+
+<img width="800" src="https://github.com/user-attachments/assets/a282fba8-1abf-4a3c-bf44-e16b9881008f" />
 
 ## 2. Model Architecture
 
