@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+pandas
+tensorflow
+numpy
+Pillow
+rapidfuzz
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+pydantic
+requests
+python-dotenv
