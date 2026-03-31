@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, ShoppingBag, Info, AlertTriangle, Sparkles, Utensils } from 'lucide-react';
+import { ChefHat, ShoppingBag, Utensils, AlertTriangle } from 'lucide-react';
 import { useCalories } from './hooks/useCalories';
 import UploadSection from './components/UploadSection';
+import ImagePreview from './components/ImagePreview';
 import ResultCard from './components/ResultCard';
-import Button from './components/ui/Button';
-import Card from './components/ui/Card';
+
+import './index.css';
 import './App.css';
 
 const API_URL = 'http://localhost:8000'; // FastAPI default port
@@ -23,7 +24,7 @@ function App() {
   const handleUpload = (file) => {
     setSelectedFile(file);
     setError(null);
-    setPredictionResult(null); // Clear previous results on new upload
+    setPredictionResult(null); 
     setCalorieResult(null);
   };
 
@@ -42,12 +43,13 @@ function App() {
 
     setIsLoading(true);
     setError(null);
+    // Explicitly clear old result to show the skeleton immediately
+    setPredictionResult(null);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
 
     try {
-      // Step 1: Call Backend for prediction
       const response = await axios.post(`${API_URL}/predict`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -57,16 +59,9 @@ function App() {
       const result = response.data;
       setPredictionResult(result);
 
-      // Step 2: Use local CSV fuzzy matching for calories
       if (result.status !== 'uncertain') {
         const matchedCalories = findCalories(result.food);
         setCalorieResult(matchedCalories);
-        
-        if (matchedCalories) {
-          console.log(`Matched: ${result.food} -> ${matchedCalories.foodName} (Score: ${matchedCalories.matchScore})`);
-        } else {
-          console.warn(`No match found for: ${result.food}`);
-        }
       }
 
     } catch (err) {
@@ -83,17 +78,18 @@ function App() {
         <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
             className="brand"
         >
-          <div className="bg-[#f97316] text-white p-2 rounded-xl shadow-lg">
-            <ChefHat size={32} />
+          <div className="brand-icon">
+            <ChefHat size={36} />
           </div>
           <h1 className="font-extrabold tracking-tight">Bite<span>Smart</span></h1>
         </motion.div>
         <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.8 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
             className="subtitle"
         >
           Intelligent food recognition powered by AI. Get instant nutritional insights by simply uploading a photo of your meal.
@@ -102,49 +98,41 @@ function App() {
 
       <main className="container main-content">
         {csvError && (
-          <div className="error-banner">
-            <AlertTriangle size={18} />
-            {csvError}
-          </div>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="error-banner">
+            <AlertTriangle size={20} />
+            <span>{csvError}</span>
+          </motion.div>
         )}
 
         <section className="grid-layout">
           <div className="upload-column flex flex-col gap-6">
-            <UploadSection 
-              onUpload={handleUpload} 
-              onClear={handleClear} 
-              isLoading={isLoading} 
-            />
-
-            <AnimatePresence>
-                {selectedFile && !predictionResult && !isLoading && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="w-full"
-                    >
-                        <Button 
-                            fullWidth 
-                            onClick={analyzeFood}
-                            disabled={isLoading || isCSVLoading}
-                            className="!py-4 !text-lg"
-                        >
-                            <Sparkles size={20} />
-                            {isLoading ? "Analyzing..." : "Analyze Meal Now"}
-                        </Button>
-                    </motion.div>
+            <AnimatePresence mode="wait">
+                {!selectedFile ? (
+                    <UploadSection 
+                        key="upload"
+                        onUpload={handleUpload} 
+                        isLoading={isLoading} 
+                    />
+                ) : (
+                    <ImagePreview 
+                        key="preview"
+                        file={selectedFile}
+                        onClear={handleClear}
+                        onAnalyze={analyzeFood}
+                        isLoading={isLoading || isCSVLoading}
+                        onUpload={handleUpload}
+                    />
                 )}
             </AnimatePresence>
 
             {error && (
                 <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex gap-2 items-center text-red-500 bg-red-50 p-4 rounded-xl border border-red-100"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="error-banner"
                 >
-                    <AlertTriangle size={18} />
-                    <p className="text-sm font-semibold">{error}</p>
+                    <AlertTriangle size={20} />
+                    <p>{error}</p>
                 </motion.div>
             )}
           </div>
@@ -152,39 +140,47 @@ function App() {
           <div className="result-column">
             <AnimatePresence mode="wait">
               {predictionResult || isLoading ? (
-                <ResultCard 
-                  key="result"
-                  result={predictionResult} 
-                  calorieResult={calorieResult} 
-                  isLoading={isLoading}
-                  onReset={handleClear} 
-                />
+                <motion.div
+                    key="result"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4 }}
+                    className="h-full"
+                >
+                    <ResultCard 
+                        result={predictionResult} 
+                        calorieResult={calorieResult} 
+                        isLoading={isLoading}
+                        onReset={handleClear} 
+                    />
+                </motion.div>
               ) : (
                 <motion.div 
                     key="empty"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="empty-placeholder"
+                    className="empty-state"
                 >
-                    <div className="placeholder-icon-box">
-                      <ShoppingBag size={40} />
+                    <div className="empty-icon-wrapper">
+                      <ShoppingBag size={48} />
                     </div>
-                    <h3 className="font-bold text-2xl mb-2">Ready to Identify?</h3>
-                    <p className="text-gray-500 text-center mb-8">
-                       Upload an image on the left to see instant nutritional insights and calorie estimations.
+                    <h3>Ready to Identify?</h3>
+                    <p>
+                       Upload an image on the left to uncover instant nutritional insights and calorie estimations.
                     </p>
-                    <div className="flex flex-col gap-4 w-full max-w-[280px]">
-                        <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Popular searches:</span>
-                        <div className="example-tags">
-                            <span className="px-3 py-1 bg-white border border-gray-100 rounded-full text-xs font-semibold text-gray-500 shadow-sm">Pizza</span>
-                            <span className="px-3 py-1 bg-white border border-gray-100 rounded-full text-xs font-semibold text-gray-500 shadow-sm">Biryani</span>
-                            <span className="px-3 py-1 bg-white border border-gray-100 rounded-full text-xs font-semibold text-gray-500 shadow-sm">Burger</span>
+                    <div className="example-searches">
+                        <span className="label">Common searches:</span>
+                        <div className="example-pills">
+                            <span className="example-pill">Pizza slice</span>
+                            <span className="example-pill">Chicken Biryani</span>
+                            <span className="example-pill">Caesar Salad</span>
                         </div>
                     </div>
-                    <div className="mt-12 opacity-50 flex items-center gap-2 text-sm text-gray-400">
-                        <Utensils size={14} />
-                        <span>Try healthy options for better results!</span>
+                    <div className="mt-8 flex items-center justify-center gap-2 opacity-50" style={{ marginTop: 'var(--spacing-12)' }}>
+                        <Utensils size={16} />
+                        <span className="text-sm">Works best with clear, well-lit photos.</span>
                     </div>
                 </motion.div>
               )}
@@ -193,14 +189,15 @@ function App() {
         </section>
       </main>
 
-      <footer className="container">
-        <div className="border-t border-gray-100 pt-8 mt-8">
-            <p className="text-gray-400 font-medium tracking-tight">
-                Bite<span className="text-orange-400">Smart</span> AI &copy; 2026 | Modern Food Identification System
+      <footer className="app-footer">
+        <div className="container">
+            <p className="tracking-tight">
+                Bite<span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Smart</span> AI &copy; 2026 | Modern Food Identification System
             </p>
-            <div className="flex gap-6 justify-center mt-4">
-                <span className="text-xs transition-opacity hover:opacity-100 opacity-60 cursor-pointer">Privacy Policy</span>
-                <span className="text-xs transition-opacity hover:opacity-100 opacity-60 cursor-pointer">Terms of Service</span>
+            <div className="footer-links">
+                <a href="#" className="footer-link">Privacy Policy</a>
+                <a href="#" className="footer-link">Terms of Service</a>
+                <a href="#" className="footer-link">Help Center</a>
             </div>
         </div>
       </footer>

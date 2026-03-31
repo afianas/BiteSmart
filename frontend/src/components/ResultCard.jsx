@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, CheckCircle, Info, ChevronRight, AlertCircle, ShoppingBag, Award } from 'lucide-react';
-import Card from './ui/Card';
+import { CheckCircle, ChevronRight, AlertCircle, Award, Info } from 'lucide-react';
+import StatCard from './StatCard';
+import TagList from './TagList';
 import ProgressBar from './ui/ProgressBar';
-import Badge from './ui/Badge';
-import Button from './ui/Button';
 
 const formatFoodName = (name) => {
     if (!name) return "";
@@ -14,11 +13,11 @@ const formatFoodName = (name) => {
 const ResultCard = ({ result, calorieResult, isLoading, onReset }) => {
     if (isLoading) {
         return (
-            <Card className="flex flex-col items-center justify-center min-h-[400px] text-center" animate={false}>
-                <div className="w-16 h-16 border-4 border-orange-50 border-t-orange-500 rounded-full animate-spin mb-6"></div>
-                <h3 className="text-2xl font-bold mb-2">Analyzing Your Meal...</h3>
-                <p className="text-gray-500 max-w-[280px]">Our AI is peering into the pixels to identify nutritional ingredients.</p>
-            </Card>
+            <div className="empty-state skeleton-box">
+                <div className="w-16 h-16 border-4 border-orange-100 border-t-orange-500 rounded-full animate-spin mb-6"></div>
+                <h3 className="text-2xl font-bold mb-2">Analyzing...</h3>
+                <p className="text-gray-500">Extracting nutritional features</p>
+            </div>
         );
     }
 
@@ -29,110 +28,108 @@ const ResultCard = ({ result, calorieResult, isLoading, onReset }) => {
 
     if (status === 'uncertain') {
         return (
-            <Card className="border-red-100 flex flex-col items-center justify-center text-center py-12" delay={0.1}>
-                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
-                    <AlertCircle size={32} />
+            <motion.div 
+                className="empty-state" 
+                style={{ backgroundColor: 'var(--error-bg)', borderColor: 'var(--error)' }}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            >
+                <div className="empty-icon-wrapper" style={{ color: 'var(--error)' }}>
+                    <AlertCircle size={48} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Analysis Incomplete</h3>
+                <h3 className="font-bold text-gray-900 mb-3" style={{ color: 'var(--error)' }}>Analysis Incomplete</h3>
                 <p className="text-gray-500 mb-8 max-w-[300px]">
                     {message || "We couldn't confidently identify this food item. Try taking another photo from a different angle."}
                 </p>
-                <Button variant="outline" onClick={onReset} className="px-8">
+                <button onClick={onReset} className="btn-secondary px-8">
                     Try Another Photo
-                </Button>
-            </Card>
+                </button>
+            </motion.div>
         );
     }
 
     return (
         <AnimatePresence>
-            <Card className="h-full flex flex-col relative" delay={0.1}>
-                <div className="prediction-title-group">
-                    <div className="flex justify-between items-center mb-4">
-                        <Badge variant="success">
-                            <CheckCircle size={14} />
-                            Verified Detection
-                        </Badge>
+            <motion.div 
+                className="image-preview-card h-full result-card-inner" 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                style={{ backgroundColor: 'var(--bg-card)' }}
+            >
+                <div className="prediction-header">
+                    <div className="prediction-meta">
+                        <span className="tag-chip font-bold text-xs" style={{ background: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success)' }}>
+                            <CheckCircle size={14} className="mr-1" /> Verified Detection
+                        </span>
                         {confidencePercentage > 90 && (
-                            <Badge variant="orange">
-                                <Award size={14} />
-                                High Accuracy
-                            </Badge>
+                            <span className="tag-chip font-bold text-xs" style={{ background: 'var(--warning-bg)', color: 'var(--warning)', borderColor: 'var(--warning)' }}>
+                                <Award size={14} className="mr-1" /> High Accuracy
+                            </span>
                         )}
                     </div>
-                    <span className="prediction-label">Likely Match</span>
-                    <h2 className="food-name">{formatFoodName(food)}</h2>
+                    <div>
+                        <span className="prediction-top-label">AI Prediction Result</span>
+                        <h2 className="prediction-title">{formatFoodName(food)}</h2>
+                    </div>
                 </div>
 
-                <div className="metrics-container">
+                <div className="metrics-container flex-col flex-1">
                     {calorieResult ? (
-                        <motion.div 
-                            className="calorie-highlight"
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <div className="calorie-icon-box">
-                                <Flame size={28} />
-                            </div>
-                            <div className="calorie-info">
-                                <span className="label">Estimated Calories</span>
-                                <span className="value">{calorieResult.calories} kcal</span>
-                                <span className="calorie-match">Matched: {calorieResult.foodName}</span>
-                            </div>
-                        </motion.div>
+                        <StatCard 
+                            calories={calorieResult.calories} 
+                            matchedFood={calorieResult.foodName} 
+                            delay={0.2} 
+                        />
                     ) : (
-                        <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
-                             <div className="flex gap-4 items-center opacity-60">
-                                <Info size={24} />
-                                <div>
-                                    <p className="font-bold text-gray-700">Approximate value</p>
-                                    <p className="text-sm">Calorie data unavailable for this item.</p>
-                                </div>
+                        <div className="stat-card" style={{ opacity: 0.7, marginBottom: 'var(--spacing-6)' }}>
+                             <div className="stat-icon" style={{ background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}>
+                                <Info size={28} />
+                             </div>
+                             <div className="stat-content">
+                                <span className="stat-label" style={{ color: 'var(--text-muted)' }}>Approximate</span>
+                                <div className="stat-value" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>Data Unavailable</div>
+                                <div className="stat-secondary">No calorie match found for this item.</div>
                              </div>
                         </div>
                     )}
 
-                    <div className="confidence-section px-2">
-                        <ProgressBar 
-                            value={confidence * 100} 
-                            label="Prediction Confidence" 
-                        />
-                    </div>
-                </div>
-
-                {top_5 && top_5.length > 1 && (
-                    <div className="alternatives-container mb-8">
-                        <h4>TOP ALTERNATIVES</h4>
-                        <div className="pill-grid">
-                            {top_5.slice(1, 4).map((alt, idx) => (
-                                <motion.div 
-                                    key={idx} 
-                                    className="pill-item"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.5 + (idx * 0.1) }}
-                                >
-                                    <span>{formatFoodName(alt.label)}</span>
-                                    <span className="conf">{(alt.confidence * 100).toFixed(0)}%</span>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                <div className="mt-auto pt-6 border-t border-gray-50">
-                    <Button 
-                        variant="secondary" 
-                        fullWidth 
-                        onClick={onReset}
-                        className="group"
+                    <motion.div 
+                        className="confidence-container"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
                     >
-                        Analyze Another Meal
-                        <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                        <div className="confidence-header">
+                            <span className="confidence-label">Prediction Confidence</span>
+                            <span className="confidence-value">{confidencePercentage}%</span>
+                        </div>
+                        <div className="confidence-bar-bg">
+                            <motion.div 
+                                className="confidence-bar-fill" 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${confidencePercentage}%` }}
+                                transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+                            />
+                        </div>
+                    </motion.div>
+
+                    <TagList alternatives={top_5} delay={0.6} />
+
                 </div>
-            </Card>
+
+                <div className="mt-auto pt-6 border-t border-gray-50" style={{ borderTop: '2px solid var(--border-light)', marginTop: 'auto', paddingTop: 'var(--spacing-6)' }}>
+                    <button 
+                        onClick={onReset}
+                        className="btn-secondary w-full group relative overflow-hidden"
+                        style={{ width: '100%' }}
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            Analyze Another Meal
+                            <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </button>
+                </div>
+            </motion.div>
         </AnimatePresence>
     );
 };
