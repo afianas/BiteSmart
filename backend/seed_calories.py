@@ -6,13 +6,13 @@ from .models import FoodCalories, Base
 Base.metadata.create_all(bind=engine)
 
 # Load CSV
-df = pd.read_csv("../data/food_data.csv")
+df = pd.read_csv("data/food_data.csv")
 
 db = SessionLocal()
 
 for _, row in df.iterrows():
-    food = row["food"].lower()
-    calories = int(row["calories"])
+    food = row["Descrip"].lower()
+    calories = int(row["Energy_kcal"])
 
     exists = db.query(FoodCalories).filter(
         FoodCalories.food_name == food

@@ -14,12 +14,11 @@ export const useCalories = () => {
         const loadCSV = async () => {
             try {
                 const response = await fetch(CSV_URL);
-                const reader = response.body.getReader();
-                const result = await reader.read();
-                const decoder = new TextDecoder('utf-8');
-                const csvString = decoder.decode(result.value);
+                if (!response.ok) throw new Error("Failed to fetch CSV");
+                
+                const csvText = await response.text();
 
-                Papa.parse(csvString, {
+                Papa.parse(csvText, {
                     header: true,
                     dynamicTyping: true,
                     skipEmptyLines: true,
@@ -28,11 +27,16 @@ export const useCalories = () => {
                         
                         // Initialize Fuse.js with the parsed data
                         const fuseInstance = new Fuse(results.data, {
-                            keys: ['food'], // Based on backend/seed_calories.py line 14
-                            threshold: 0.4, // Balanced matching as requested
+                            keys: ['ShortDescrip', 'Descrip'],
+                            threshold: 0.4,
                             includeScore: true
                         });
                         setFuse(fuseInstance);
+                        setIsLoading(false);
+                    },
+                    error: (err) => {
+                        console.error("Papa parse error:", err);
+                        setError("Error parsing calorie data.");
                         setIsLoading(false);
                     }
                 });
@@ -53,8 +57,8 @@ export const useCalories = () => {
         if (results.length > 0) {
             const bestMatch = results[0];
             return {
-                foodName: bestMatch.item.food,
-                calories: bestMatch.item.calories,
+                foodName: bestMatch.item.Descrip || bestMatch.item.ShortDescrip,
+                calories: Math.round(bestMatch.item.Energy_kcal),
                 matchScore: (1 - bestMatch.score).toFixed(2)
             };
         }
