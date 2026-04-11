@@ -213,4 +213,4 @@ To evolve BiteSmart into an enterprise-ready system, the following optimizations
 
 ## 14. Conclusion
 
-BiteSmart effectively demonstrates the immense power and utility of CNN-based approaches in applied computer vision. By rigidly controlling the training pipeline and heavily utilizing fine-tuning, the EfficientNetB3 backbone reliably achieved highly competitive validation numbers mapping directly to a smooth user experience. The surrounding system architecture was purposefully engineered with scalability in mind, firmly bridging the gap between an experimental ML notebook and a robust, production-capable software product.
+BiteSmart effectively demonstrates the immense power and utility of CNN-based approaches in applied computer vision. By rigidly controlling the training pipeline and heavily utilizing fine-tuning, the EfficientNetB3 backbone reliably achieved highly competitive validation numbers mapping directly to a smooth user experience.
